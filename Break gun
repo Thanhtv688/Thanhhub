@@ -1,0 +1,25 @@
+			local o = V(q.Sheriff)
+			if o and o.Name ~= g then
+				local Y = false
+				for o, j in pairs(o.Backpack:GetChildren()) do
+					if j.Name == "Gun" and j:IsA("Tool") then
+						Y = j
+					end
+				end
+				if not Y then
+					for o, j in pairs(o.Character:GetChildren()) do
+						if j.Name == "Gun" and j:IsA("Tool") then
+							Y = j
+						end
+					end
+				end
+				if Y then
+					local o, j = pcall(function()
+						z.Function(Y.KnifeServer.ShootGun, 0, CFrame.new(), "AH")
+					end)
+					if j and not o then
+						I("<font color=\"rgb(\048, \050\053\053, \048)\">Successfully</font> Breaked the gun from <font color=\"rgb(\048, \048, \050\053\053)\">Sheriff</font>!")
+					end
+				end
+			end
+		end)
