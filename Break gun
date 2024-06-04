@@ -1,6 +1,4 @@
-ChangeAutoBreakGun = Value
-    while ChangeAutoBreakGun do
-        function BreakGunIgnore()
+function BreakGunIgnore()
         SearchforGun()
         task.wait()
         if GunPath ~= nil then
