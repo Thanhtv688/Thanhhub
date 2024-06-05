@@ -1718,6 +1718,12 @@ Murderer:addToggle("Knife Aura", false, function(Value)
     end
 end)
 
+Murderer:addButton("Ném dao nhanh:3", function()
+    if ExecutorFunction() then return end
+    g = hookfunction(wait, function(seconds) return g(0) end)
+    visualg = hookfunction(wait, function(seconds) return g(0) end)
+end)
+
 if R3THDEVICE == "Mobile" then
     Murderer:addTextbox("Knife Range", 20, function(Value, focusLost)
         KnifeAuraSlider = Value
@@ -1828,16 +1834,16 @@ Chams:addToggle("Sheriff Cham", false, function(Value)
     ChangeSheriffCham = Value
 end)
 
-Main:addButton("Expose Roles", function()
+Main:addButton("Nhắn tên của murder và sheriff", function()
     SayMessageRequest:FireServer("Murderer Is: " .. Murder, "normalchat")
     SayMessageRequest:FireServer("Sheriff Is: " .. Sheriff, "normalchat")
 end)
 
-Main:addButton("Fake Gun", function()
+Main:addButton("Súng fake (bắt buộc phải có skill murder fake gun)", function()
     Gameplay.FakeGun:FireServer(true)
 end)
  
-Main:addToggle("Auto Break Gun", false, function(Value)
+Main:addToggle("Vô hiệu hóa súng (ko thể vô hiệu hóa chính mình)", false, function(Value)
     ChangeAutoBreakGun = Value
     while ChangeAutoBreakGun do
         function BreakGunIgnore()
@@ -1856,7 +1862,7 @@ Misc:addButton("Audio Logger", function()
     loadstring(game:HttpGet('https://pastebin.com/raw/v7Usg709', true))()
 end)
 
-Misc:addDropdown("View Player", playerlist, function(Value)
+Misc:addDropdown("Vào Gốc Nhìn người khác", playerlist, function(Value)
     if Value ~= "All" then
         Workspace.Camera.CameraSubject = Players[Value].Character:WaitForChild("Humanoid")
     end
