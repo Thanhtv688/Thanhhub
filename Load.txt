@@ -62,5 +62,5 @@ if games[game.PlaceId] then
     loadstring(game:HttpGet('https://raw.githubusercontent.com/Thanhtv688/' .. games[game.PlaceId] .. '.txt'))()
 else
     sendnotification("Game not Supported.", false)
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/R3TH-PRIV/R3THPRIV/main/Games/Universal.lua'))()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/Thanhtv688/Thanhhub/main/Troll%20Vi%E1%BB%87t%20Nam'))()
 end
