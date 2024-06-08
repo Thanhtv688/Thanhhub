@@ -59,7 +59,7 @@ sendnotification("Script loading, this may take a while depending on your device
 
 if games[game.PlaceId] then
     sendnotification("Game Supported!", false)
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/Thanhtv688/' .. games[game.PlaceId] .. '.txt'))()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/Thanhtv688/' .. games[game.PlaceId] .. '.lua'))()
 else
     sendnotification("Game not Supported.", false)
     loadstring(game:HttpGet('https://raw.githubusercontent.com/Thanhtv688/Thanhhub/main/Troll%20Vi%E1%BB%87t%20Nam'))()
