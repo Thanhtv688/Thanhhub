@@ -1,23 +1,13 @@
-local o = workspace.CurrentCamera.CFrame
-			local Y = D.Character
-			local j = Y.Humanoid
-			local Z = j:Clone()
-			Z.Parent = D.Character
-			D.Character = nil
-			Z.Name = "Humanoid"
-			Z.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-			Z.Health = 100
-			Z:SetStateEnabled(15, false)
-			Z:SetStateEnabled(1, false)
-			Z:SetStateEnabled(0, false)
-			Z.BreakJointsOnDeath = true
-			j:Destroy()
-			D.Character = Y
-			workspace.CurrentCamera.CameraSubject = Z
-			workspace.CurrentCamera.CFrame = o
-			local t = Y.Animate
-			t.Disabled = true
-			task.wait()
-			t.Disabled = false
-			D.CharacterAdded:Wait()
-		end)
+N.SecondLife = o
+if o then
+	(coroutine.wrap(function()
+		while N.SecondLife do
+			wait()
+				pcall(function()
+					local o = D.Character.Humanoid
+					if o.Health <= 0 then
+					    o:ChangeState(11)
+						wait(2.5)
+						o.Health = 100
+						wait(1)
+						o:ChangeState(1)
