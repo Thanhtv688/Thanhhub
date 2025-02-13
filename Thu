@@ -1,0 +1,6 @@
+return {
+    NguoiNhanThu = {
+        [3910305106] = "BaoLoi",  -- Người chơi ID 123456789 sẽ nhận thư báo lỗi đã fix
+        [987654321] = "YeuCau"   -- Người chơi ID 987654321 sẽ nhận thư cảm ơn vì ý tưởng mới
+    }
+}
