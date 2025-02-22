@@ -1,3 +1,11 @@
+-- **Kiểm tra map**
+local GameID = game.PlaceId
+
+if GameID ~= 13772394625 then
+    game.Players.LocalPlayer:Kick("⚠ Script không hoạt động cho map này!")
+    return
+end
+
 -- **🔹 Tải thư viện Orion UI**
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/jensonhirst/Orion/main/source"))()
 local HttpService = game:GetService("HttpService")
