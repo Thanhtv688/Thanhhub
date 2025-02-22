@@ -1,3 +1,10 @@
+-- Kiểm tra ID map
+if game.PlaceId ~= 142823291 then
+    game.Players.LocalPlayer:Kick("⚠ Script không hoạt động cho map này!")
+    return
+end
+
+-- Chạy script Thanh Hub Murder Mystery 2 ngay lập tức
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/jensonhirst/Orion/main/source"))()
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
