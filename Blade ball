@@ -6,6 +6,16 @@ if GameID ~= 13772394625 then
     return
 end
 
+local Executor = identifyexecutor and identifyexecutor() or "Unknown"
+local BlacklistedExecutors = { "Solara", "Ronix", "Ghost", "Unknown" }
+
+for _, exec in pairs(BlacklistedExecutors) do
+    if Executor == exec then
+        game.Players.LocalPlayer:Kick("⚠ Executor không được hỗ trợ!")
+        return
+    end
+end
+
 -- **🔹 Tải thư viện Orion UI**
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/jensonhirst/Orion/main/source"))()
 local HttpService = game:GetService("HttpService")
@@ -54,7 +64,6 @@ KiemTraBan()
 
 -- **📌 Kiểm tra người dùng và gửi Webhook**
 local WebhookURL = "https://discord.com/api/webhooks/1339200430579908619/pj8_QCHfvDXJgW2j0sJadTXByc5vn5X0LMFnilsdqszYHdAHPbedmaACJhdwdnKbtvY6"
-local Executor = identifyexecutor and identifyexecutor() or "Không xác định"
 local TenNguoiChoi = LocalPlayer.Name
 local IDNguoiChoi = LocalPlayer.UserId
 local AvatarURL = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. IDNguoiChoi .. "&width=420&height=420&format=png"
