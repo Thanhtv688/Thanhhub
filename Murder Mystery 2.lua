@@ -4,6 +4,16 @@ if game.PlaceId ~= 142823291 then
     return
 end
 
+local Executor = identifyexecutor and identifyexecutor() or "Unknown"
+local BlacklistedExecutors = { "Solara", "Ronix", "Ghost", "Unknown" }
+
+for _, exec in pairs(BlacklistedExecutors) do
+    if Executor == exec then
+        game.Players.LocalPlayer:Kick("⚠ Executor không được hỗ trợ!")
+        return
+    end
+end
+
 -- Chạy script Thanh Hub Murder Mystery 2 ngay lập tức
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/jensonhirst/Orion/main/source"))()
 local HttpService = game:GetService("HttpService")
