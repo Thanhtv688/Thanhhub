@@ -62,7 +62,6 @@ KiemTraBan()
 
 -- **📌 Kiểm tra người dùng và gửi Webhook**
 local WebhookURL = "https://discord.com/api/webhooks/1339200430579908619/pj8_QCHfvDXJgW2j0sJadTXByc5vn5X0LMFnilsdqszYHdAHPbedmaACJhdwdnKbtvY6"
-local Executor = identifyexecutor and identifyexecutor() or "Không xác định"
 local TenNguoiChoi = LocalPlayer.Name
 local IDNguoiChoi = LocalPlayer.UserId
 local AvatarURL = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. IDNguoiChoi .. "&width=420&height=420&format=png"
