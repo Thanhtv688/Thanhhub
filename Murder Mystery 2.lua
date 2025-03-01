@@ -239,10 +239,146 @@ TabDichChuyen:AddButton({
 
 -- **⚔ Tab Chiến Đấu (Shoot Murderer)**
 local TabChienDau = CuaSo:MakeTab({ Name = "⚔ Chiến Đấu", Icon = "rbxassetid://4483345998" })
-TabChienDau:AddButton({
-    Name = "🔫 Tạo Nút Bắn Murderer",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Chubedan3/TH/refs/heads/main/chatgpt%20nh%C6%B0%20l.txt"))()
+
+local shootButton
+local function createShootButton()
+    if shootButton then return end -- Đảm bảo không tạo nhiều nút
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Parent = game.CoreGui
+    
+    shootButton = Instance.new("TextButton")
+    shootButton.Parent = ScreenGui
+    shootButton.Size = UDim2.new(0, 200, 0, 50)
+    shootButton.Position = UDim2.new(0.5, -100, 0.5, 0) -- Đặt vị trí giữa màn hình
+    shootButton.Text = "Bắn Murderer"
+    shootButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    shootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    shootButton.Font = Enum.Font.SourceSansBold
+    shootButton.TextSize = 20
+    shootButton.Visible = true
+    shootButton.Active = true
+    
+    -- Cho phép kéo nút mà không bị lỗi xê dịch
+    local dragging, dragInput, dragStart, startPos
+    local UIS = game:GetService("UserInputService")
+    local camera = game:GetService("Workspace").CurrentCamera
+    
+    shootButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = shootButton.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    shootButton.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            local newPos = UDim2.new(0, startPos.X.Offset + delta.X, 0, startPos.Y.Offset + delta.Y)
+            
+            -- Giữ nút trong màn hình
+            local screenSize = camera.ViewportSize
+            newPos = UDim2.new(
+                0, math.clamp(newPos.X.Offset, 0, screenSize.X - shootButton.AbsoluteSize.X),
+                0, math.clamp(newPos.Y.Offset, 0, screenSize.Y - shootButton.AbsoluteSize.Y)
+            )
+            shootButton.Position = newPos
+        end
+    end)
+
+    -- Khi nhấn nút, kiểm tra và bắn Murderer
+    shootButton.MouseButton1Click:Connect(function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        local backpack = player:FindFirstChild("Backpack")
+        
+        local function hasGun()
+            return character and character:FindFirstChild("Gun") or (backpack and backpack:FindFirstChild("Gun"))
+        end
+        
+        local function findMurderer()
+            for _, plr in pairs(game.Players:GetPlayers()) do
+                if plr ~= player and plr.Character and plr.Character:FindFirstChild("Knife") then
+                    return plr
+                end
+            end
+            return nil
+        end
+        
+        local function predictPosition(target)
+            local hrp = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local velocity = hrp.Velocity * 0.1 
+                return hrp.Position + velocity
+            end
+            return hrp.Position
+        end
+        
+        local function shootTarget(target)
+            local predictedPosition = predictPosition(target)
+            local args = {
+                [1] = 1,
+                [2] = predictedPosition,
+                [3] = "AH2"
+            }
+            player.Character.Gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Thành công",
+                Text = "Đã bắn Murderer!",
+                Duration = 5
+            })
+        end
+        
+        if not hasGun() then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Lỗi",
+                Text = "Bạn không có súng!",
+                Duration = 5
+            })
+            return
+        end
+        
+        local murderer = findMurderer()
+        if murderer then
+            shootTarget(murderer)
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Lỗi",
+                Text = "Không tìm thấy Murderer!",
+                Duration = 5
+            })
+        end
+    end)
+end
+
+local function removeShootButton()
+    if shootButton then
+        shootButton:Destroy()
+        shootButton = nil
+    end
+end
+
+TabChienDau:AddToggle({
+    Name = "Hiện Nút Bắn Murderer",
+    Default = false,
+    Callback = function(state)
+        if state then
+            createShootButton()
+        else
+            removeShootButton()
+        end
     end
 })
 
