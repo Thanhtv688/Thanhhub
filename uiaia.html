@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Thanh Hub Script">
+    <title>Thanh Hub Script</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Picsart_24-11-03_17-30-46-045.png" type="image/x-icon">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: rgba(5, 5, 10, 0.9);
+            background-image: url("https://i.pinimg.com/originals/55/01/60/5501609ee45d514d1f2c4a63502045e2.gif");
+            color: #fff;
+            overflow-x: hidden;
+            background-repeat: no-repeat;
+            background-size: cover;
+            text-align: center;
+        }
+
+        /* Thanh điều hướng */
+        .top-bar {
+            background-color: rgba(0, 0, 128, 0.3);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .left-side {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .menu-icon.rotate {
+            transform: rotate(180deg);
+        }
+
+        /* Menu trượt xuống và full chiều ngang */
+.menu-container {
+    position: absolute;
+    top: 60px; /* Đẩy menu xuống dưới thanh điều hướng */
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.menu-container.expand {
+    height: auto;
+    opacity: 1;
+    transform: translateY(0);
+    padding: 20px 0;
+}
+
+        .menu-items a {
+            display: block;
+            padding: 15px;
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        /* Khung chính */
+        .container {
+            text-align: center;
+            background: rgba(30, 30, 30, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            margin-top: 100px;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background 0.3s ease-in-out;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+        <div class="all">
+            <div class="top-bar">
+                <div class="left-side">
+                    <img src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Picsart_24-11-03_17-30-46-045.png" alt="Logo" class="logo">
+                    <div class="title">
+                        Thanh Hub
+                    </div>
+                </div>
+                <div class="menu-icon" id="menuIcon">
+                    +
+                </div>
+            </div>
+            <div class="menu-container" id="menuContainer">
+                <div class="menu-items">
+                    <a href="#">Home</a> <a href="https://script.thanhhub.workers.dev">Script</a> <a href="https://zalo.me/g/gcxntt198">Zalo</a> 
+                </div>
+            </div>
+        </div>
+
+    <!-- Nội dung chính -->
+    <div class="container">
+        <h1>Thanh Hub Scripts</h1>
+        <p>Nhấn vào nút bên dưới để sao chép script:</p>
+        <button onclick="copyScript('loadstring(game:HttpGet(\'https://scriptmurdermystery2.thanhhub.workers.dev\'))()')">
+            Sao chép Thanh Hub Murder Mystery 2
+        </button>
+        <button onclick="copyScript('loadstring(game:HttpGet(\'https://scriptbladeball.thanhhub.workers.dev\'))()')">
+            Sao chép Thanh Hub Blade Ball
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fix Developer
+            let devName = document.getElementById("dev-name");
+            let devIcon = document.getElementById("dev-icon");
+
+            if (devName && devIcon) {
+                devName.innerText = "Nguyễn Đức Thanh (thanhtv68 & Poor Hamster)";
+                devIcon.src = "https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/IMG_20250306_151454.jpg";
+            }
+
+            // Kiểm tra và cập nhật Developer nếu bị ghi đè
+            setInterval(() => {
+                if (devName && devName.innerText !== "Nguyễn Đức Thanh (thanhtv68 & Poor Hamster)") {
+                    devName.innerText = "Nguyễn Đức Thanh (thanhtv68 & Poor Hamster)";
+                }
+                if (devIcon && devIcon.src !== "https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/IMG_20250306_151454.jpg") {
+                    devIcon.src = "https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/IMG_20250306_151454.jpg";
+                }
+            }, 100);
+
+            // Fix Menu điều hướng + hiệu ứng xoay
+            let menuIcon = document.getElementById("menuIcon");
+            let menuContainer = document.getElementById("menuContainer");
+
+            if (menuIcon && menuContainer) {
+                menuIcon.addEventListener("click", function () {
+                    menuContainer.classList.toggle("expand");
+                    menuIcon.classList.toggle("rotate"); // Xoay nút "+"
+                });
+            }
+        });
+
+        // Sao chép script vào clipboard
+        function copyScript(script) {
+            navigator.clipboard.writeText(script).then(() => {
+                alert("Đã sao chép script!");
+            }).catch(err => {
+                alert("Lỗi sao chép!");
+            });
+        }
+    </script>
+
+</body>
+</html>
