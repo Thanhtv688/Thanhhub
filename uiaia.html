@@ -17,130 +17,178 @@
             overflow-x: hidden;
             background-repeat: no-repeat;
             background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
+            text-align: center;
         }
 
         /* Thanh điều hướng */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 128, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 15px;
+        .top-bar {
+            background-color: rgba(0, 0, 128, 0.3);
+            color: white;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
         }
 
-        .navbar .logo {
+        .left-side {
             display: flex;
             align-items: center;
         }
 
-        .navbar img {
+        .logo {
             width: 30px;
             height: 30px;
             margin-right: 10px;
         }
 
-        .navbar .title {
+        .title {
             font-size: 18px;
             font-weight: bold;
         }
 
-        .menu {
-            display: flex;
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
         }
 
-        .menu a {
+        .menu-icon.rotate {
+            transform: rotate(180deg);
+        }
+
+        /* Menu trượt xuống và full chiều ngang */
+.menu-container {
+    position: absolute;
+    top: 60px; /* Đẩy menu xuống dưới thanh điều hướng */
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.menu-container.expand {
+    height: auto;
+    opacity: 1;
+    transform: translateY(0);
+    padding: 20px 0;
+}
+
+        .menu-items a {
+            display: block;
+            padding: 15px;
             color: white;
             text-decoration: none;
-            padding: 10px 15px;
-            font-size: 16px;
-            transition: background 0.3s ease-in-out;
+            font-size: 18px;
         }
 
-        .menu a:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Khung nền trong suốt */
-        .script-container {
-            background: rgba(20, 20, 50, 0.5);
-            border-radius: 10px;
-            padding: 20px;
-            width: 80%;
-            max-width: 400px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        /* Khung chính */
+        .container {
             text-align: center;
+            background: rgba(30, 30, 30, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            margin-top: 100px;
         }
 
-        .script-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 15px;
+        h1 {
+            font-size: 2rem;
         }
 
-        .script-button {
-            background-color: #7a00ff;
+        button {
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 15px;
-            font-size: 18px;
-            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 16px;
             cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
+            border-radius: 5px;
+            margin: 10px;
             transition: background 0.3s ease-in-out;
         }
 
-        .script-button:hover {
-            background-color: #e300ff;
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
 
-    <!-- Thanh điều hướng từ file uiaia.html -->
-    <div class="navbar">
-        <div class="logo">
-            <img src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Picsart_24-11-03_17-30-46-045.png" alt="Logo">
-            <div class="title">Thanh Hub</div>
+        <div class="all">
+            <div class="top-bar">
+                <div class="left-side">
+                    <img src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Picsart_24-11-03_17-30-46-045.png" alt="Logo" class="logo">
+                    <div class="title">
+                        Thanh Hub
+                    </div>
+                </div>
+                <div class="menu-icon" id="menuIcon">
+                    +
+                </div>
+            </div>
+            <div class="menu-container" id="menuContainer">
+                <div class="menu-items">
+                    <a href="https://website.thanhhub.workers.dev">Home</a> <a href="#">Script</a> <a href="https://zalo.me/g/gcxntt198">Zalo</a> 
+                </div>
+            </div>
         </div>
-        <div class="menu">
-            <a href="#">Home</a>
-            <a href="https://script.thanhhub.workers.dev">Script</a>
-            <a href="https://zalo.me/g/gcxntt198">Zalo</a>
-        </div>
-    </div>
 
     <!-- Nội dung chính -->
-    <div class="script-container">
-        <div class="script-title">Thanh Hub Scripts</div>
+    <div class="container">
+        <h1>Thanh Hub Scripts</h1>
         <p>Nhấn vào nút bên dưới để sao chép script:</p>
-        <button class="script-button" onclick="copyScript('https://scriptmurdermystery2.thanhhub.workers.dev')">
-            Sao Chép Thanh Hub Murder Mystery 2
+        <button onclick="copyScript('loadstring(game:HttpGet(\'https://scriptmurdermystery2.thanhhub.workers.dev\'))()')">
+            Sao chép Thanh Hub Murder Mystery 2
         </button>
-        <button class="script-button" onclick="copyScript('https://scriptbladeball.thanhhub.workers.dev')">
-            Sao Chép Thanh Hub Blade Ball
+        <button onclick="copyScript('loadstring(game:HttpGet(\'https://scriptbladeball.thanhhub.workers.dev\'))()')">
+            Sao chép Thanh Hub Blade Ball
         </button>
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fix Developer
+            let devName = document.getElementById("dev-name");
+            let devIcon = document.getElementById("dev-icon");
+
+            if (devName && devIcon) {
+                devName.innerText = "Nguyễn Đức Thanh (thanhtv68 & Poor Hamster)";
+                devIcon.src = "https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/IMG_20250306_151454.jpg";
+            }
+
+            // Kiểm tra và cập nhật Developer nếu bị ghi đè
+            setInterval(() => {
+                if (devName && devName.innerText !== "Nguyễn Đức Thanh (thanhtv68 & Poor Hamster)") {
+                    devName.innerText = "Nguyễn Đức Thanh (thanhtv68 & Poor Hamster)";
+                }
+                if (devIcon && devIcon.src !== "https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/IMG_20250306_151454.jpg") {
+                    devIcon.src = "https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/IMG_20250306_151454.jpg";
+                }
+            }, 100);
+
+            // Fix Menu điều hướng + hiệu ứng xoay
+            let menuIcon = document.getElementById("menuIcon");
+            let menuContainer = document.getElementById("menuContainer");
+
+            if (menuIcon && menuContainer) {
+                menuIcon.addEventListener("click", function () {
+                    menuContainer.classList.toggle("expand");
+                    menuIcon.classList.toggle("rotate"); // Xoay nút "+"
+                });
+            }
+        });
+
         // Sao chép script vào clipboard
-        function copyScript(url) {
-            let script = `loadstring(game:HttpGet('${url}'))()`;
+        function copyScript(script) {
             navigator.clipboard.writeText(script).then(() => {
                 alert("Đã sao chép script!");
             }).catch(err => {
-                console.error("Lỗi sao chép: ", err);
+                alert("Lỗi sao chép!");
             });
         }
     </script>
