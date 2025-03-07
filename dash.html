@@ -167,21 +167,16 @@
             color: red;
         }
 
-        .script-button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            font-size: 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
+        .script-text {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
             margin-top: 10px;
-            transition: background 0.2s ease-in-out;
-        }
-
-        .script-button:hover {
-            background-color: #0056b3;
+            word-wrap: break-word;
+            user-select: all;
         }
 
         .centerhead h1 {
@@ -281,7 +276,7 @@
         @media (max-width: 768px) {
             .main img { width: 30%; }
             .containers { grid-template-columns: 1fr; }
-            .script-btn, .script-button { font-size: 1rem; padding: 0.8rem 1.5rem; }
+            .script-btn { font-size: 1rem; padding: 0.8rem 1.5rem; }
             #script-container { max-width: 90%; }
             .image-container, .image-container2 { width: 80%; }
             canvas { max-width: 90%; }
@@ -294,7 +289,7 @@
             <img class="logo" src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Picsart_24-11-03_17-30-46-045.png" alt="Logo">
             <div class="title">Thanh Hub</div>
         </div>
-        <div class="menu-icon" onclick="toggleMenu()">☰</div>
+        <div class="menu-icon" id="menuToggle">☰</div>
     </div>
     <div class="menu-container" id="menuContainer">
         <div class="menu-items">
@@ -308,15 +303,15 @@
         <h1>Thanh Hub</h1>
         <p>:3</p>
         <h2>Bạn có muốn thử không?</h2>
-        <a class="script-btn" onclick="openScriptMenu()">Lấy Script!</a>
+        <a class="script-btn" id="scriptBtn">Lấy Script!</a>
     </div>
     <div class="image-container" id="script-container">
         <img src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Images/code.png">
         <div class="title">Thanh Hub Scripts</div>
-        <div class="description">Nhấn vào nút bên dưới để sao chép script nhanh chóng.</div>
-        <button class="script-button" onclick="copyScript('https://scriptmurdermystery2.thanhhub.workers.dev')">Sao Chép Thanh Hub Murder Mystery 2</button>
-        <button class="script-button" onclick="copyScript('https://scriptbladeball.thanhhub.workers.dev')">Sao Chép Thanh Hub Blade Ball</button>
-        <button class="close-btn" onclick="closeScriptMenu()">×</button>
+        <div class="description">Sao chép script bên dưới bằng cách bôi đen và nhấn Ctrl+C:</div>
+        <div class="script-text">loadstring(game:HttpGet('https://scriptmurdermystery2.thanhhub.workers.dev'))() <br><span style="color: #aaa;">(Thanh Hub Murder Mystery 2)</span></div>
+        <div class="script-text">loadstring(game:HttpGet('https://scriptbladeball.thanhhub.workers.dev'))() <br><span style="color: #aaa;">(Thanh Hub Blade Ball)</span></div>
+        <button class="close-btn" id="closeBtn">×</button>
     </div>
     <div class="centerhead">
         <h1>Kéo Xuống Để Xem Thêm Thông Tin Về Thanh Hub 👇 (UI Web owner: elfandtears_ndk)</h1>
@@ -392,48 +387,36 @@
     <script>
         // Đảm bảo trang tải xong trước khi chạy script
         document.addEventListener("DOMContentLoaded", function() {
-            // Menu toggle
-            function toggleMenu() {
-                let menu = document.getElementById("menuContainer");
-                let menuIcon = document.querySelector(".menu-icon");
-                if (menu.classList.contains("expand")) {
-                    menu.classList.remove("expand");
-                    menuIcon.classList.remove("rotating");
-                    menuIcon.textContent = "☰";
+            // Thanh điều hướng
+            const menuToggle = document.getElementById("menuToggle");
+            const menuContainer = document.getElementById("menuContainer");
+
+            menuToggle.addEventListener("click", function() {
+                if (menuContainer.classList.contains("expand")) {
+                    menuContainer.classList.remove("expand");
+                    menuToggle.classList.remove("rotating");
+                    menuToggle.textContent = "☰";
                 } else {
-                    menu.classList.add("expand");
-                    menuIcon.classList.add("rotating");
-                    menuIcon.textContent = "×";
+                    menuContainer.classList.add("expand");
+                    menuToggle.classList.add("rotating");
+                    menuToggle.textContent = "×";
                 }
-            }
+            });
 
             // Script menu
-            function openScriptMenu() {
-                let menu = document.getElementById("script-container");
-                if (menu) {
-                    menu.classList.add("show");
-                }
-            }
+            const scriptBtn = document.getElementById("scriptBtn");
+            const scriptContainer = document.getElementById("script-container");
+            const closeBtn = document.getElementById("closeBtn");
 
-            function closeScriptMenu() {
-                let menu = document.getElementById("script-container");
-                if (menu) {
-                    menu.classList.remove("show");
-                }
-            }
+            scriptBtn.addEventListener("click", function() {
+                scriptContainer.classList.add("show");
+            });
 
-            // Hàm sao chép script với cú pháp chính xác
-            function copyScript(url) {
-                const scriptText = `loadstring(game:HttpGet('${url}'))()`;
-                navigator.clipboard.writeText(scriptText).then(() => {
-                    alert("Đã sao chép script: " + scriptText);
-                }).catch(err => {
-                    console.error("Lỗi sao chép: ", err);
-                    alert("Không thể sao chép script. Vui lòng thử lại!");
-                });
-            }
+            closeBtn.addEventListener("click", function() {
+                scriptContainer.classList.remove("show");
+            });
 
-            // Intersection Observer (không áp dụng cho #script-container)
+            // Intersection Observer
             function observeElements(selector) {
                 const elements = document.querySelectorAll(selector);
                 const observer = new IntersectionObserver((entries) => {
@@ -474,8 +457,8 @@
             renderChart();
 
             // Fix Developer
-            let devName = document.getElementById("dev-name");
-            let devIcon = document.getElementById("dev-icon");
+            const devName = document.getElementById("dev-name");
+            const devIcon = document.getElementById("dev-icon");
             if (devName && devIcon) {
                 devName.innerText = "Nguyễn Đức Thanh (thanhtv68 & Poor Hamster)";
                 devIcon.src = "https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/IMG_20250306_151454.jpg";
@@ -488,10 +471,6 @@
                     devIcon.src = "https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/IMG_20250306_151454.jpg";
                 }
             }, 100);
-
-            // Gắn sự kiện cho các nút
-            document.querySelector(".script-btn").addEventListener("click", openScriptMenu);
-            document.querySelector(".close-btn").addEventListener("click", closeScriptMenu);
         });
     </script>
 </body>
