@@ -434,14 +434,14 @@
             // Chart
             async function renderChart() {
                 const ctx = document.getElementById("executions").getContext("2d");
-                const labels = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                const data = [100, 200, 150, 300, 250, 400, 350, 500, 450, 600, 550, 700];
+                const labels = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7, "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+                const data = [7, 4, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0];
                 new Chart(ctx, {
                     type: "bar",
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: "Monthly Executions",
+                            label: "Số lần khởi động Thanh Hub theo tháng (2025)",
                             data: data,
                             backgroundColor: "rgba(0, 0, 255, 0.5)",
                             borderColor: "rgba(0, 0, 255, 1)",
