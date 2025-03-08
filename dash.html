@@ -17,103 +17,93 @@
             overflow-x: hidden;
             background-repeat: no-repeat;
             background-size: cover;
+            transition: opacity 0.3s ease-in-out;
         }
 
         .top-bar {
             background-color: rgba(0, 0, 0, 0.3);
             color: white;
-            padding: 15px 20px;
+            padding: 10px 15px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 1000;
+            overflow-x: auto;
+            white-space: nowrap;
         }
 
-        .left-side {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo {
-            width: 30px;
-            height: 30px;
+        .top-bar > * {
             margin-right: 10px;
         }
 
-        .menu-icon {
-            font-size: 24px;
-            cursor: pointer;
-            transition: transform 0.3s ease-in-out;
+        .top-bar > *:last-child {
+            margin-right: 0;
         }
 
-        .menu-icon.rotating {
-            transform: rotate(90deg);
+        .logo {
+            width: 25px;
+            height: 25px;
         }
 
-        .menu-container {
-            position: fixed;
-            top: 60px;
-            left: 0;
-            width: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            text-align: center;
-            height: 0;
-            overflow: hidden;
-            transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out;
-            opacity: 0;
-            z-index: 999;
+        .title {
+            font-size: 1.2rem;
+            margin-right: 10px;
         }
 
-        .menu-container.expand {
-            height: 90px;
-            opacity: 1;
+        .menu-items {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .menu-items a {
-            padding: 10px;
+            padding: 8px 15px;
             text-decoration: none;
             color: white;
-            display: block;
-            transition: color 0.5s ease;
+            transition: color 0.5s ease, background-color 0.3s ease;
+            font-size: 1rem;
         }
 
         .menu-items a:hover {
             color: rgba(0, 0, 255, 1);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
         }
 
-        .main {
+        .content {
             text-align: center;
             padding: 5rem 1rem;
+            margin-top: 50px;
             transform: translateY(100px);
             transition: opacity 0.6s ease, transform 0.6s ease;
+            opacity: 0;
         }
 
-        .main.show {
+        .content.show {
             opacity: 1;
             transform: translateY(0);
         }
 
-        .main img {
+        .content img {
             width: 15%;
             height: auto;
             border-radius: 8px;
             margin-bottom: 1rem;
         }
 
-        .main h1 {
+        .content h1 {
             font-size: 3rem;
             margin-bottom: 1rem;
         }
 
-        .main p {
+        .content p {
             font-size: 1.2rem;
             margin-bottom: 2rem;
         }
 
-        .script-btn {
+        .script-btn, .zalo-btn, .download-btn {
             text-decoration: none;
             color: #fff;
             background-color: #7a00ff;
@@ -123,10 +113,24 @@
             display: inline-block;
             cursor: pointer;
             transition: background 0.3s ease-in-out;
+            margin: 0 10px;
         }
 
-        .script-btn:hover {
+        .script-btn:hover, .zalo-btn:hover, .download-btn:hover {
             background-color: #e300ff;
+        }
+
+        #delta-subcontent {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        #delta-subcontent.show {
+            display: block;
+        }
+
+        #delta-subcontent .download-btn {
+            margin-bottom: 10px; /* Thêm khoảng cách 10px giữa các nút */
         }
 
         #script-container {
@@ -274,37 +278,63 @@
         }
 
         @media (max-width: 768px) {
-            .main img { width: 30%; }
+            .content img { width: 30%; }
             .containers { grid-template-columns: 1fr; }
-            .script-btn { font-size: 1rem; padding: 0.8rem 1.5rem; }
+            .script-btn, .zalo-btn, .download-btn { font-size: 1rem; padding: 0.8rem 1.5rem; }
             #script-container { max-width: 90%; }
             .image-container, .image-container2 { width: 80%; }
             canvas { max-width: 90%; }
+            .top-bar { padding: 8px 10px; }
+            .logo { width: 20px; height: 20px; }
+            .title { font-size: 1rem; margin-right: 8px; }
+            .menu-items { gap: 8px; }
+            .menu-items a { padding: 6px 10px; font-size: 0.85rem; }
         }
     </style>
 </head>
 <body>
     <div class="top-bar">
-        <div class="left-side">
-            <img class="logo" src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Picsart_24-11-03_17-30-46-045.png" alt="Logo">
-            <div class="title">Thanh Hub</div>
-        </div>
-        <div class="menu-icon" id="menuToggle">☰</div>
-    </div>
-    <div class="menu-container" id="menuContainer">
+        <img class="logo" src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Picsart_24-11-03_17-30-46-045.png" alt="Logo">
+        <div class="title">Thanh Hub</div>
         <div class="menu-items">
-            <a href="#">Home</a>
-            <a href="https://script.thanhhub.workers.dev">Script</a>
-            <a href="https://zalo.me/g/gcxntt198">Zalo</a>
+            <a href="#" data-section="home">Home</a>
+            <a href="#" data-section="executor">Executor</a>
+            <a href="#" data-section="zalo">Zalo</a>
         </div>
     </div>
-    <div class="main" id="v">
+
+    <!-- Nội dung các phần -->
+    <div id="home" class="content">
         <img src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Picsart_24-11-03_17-30-46-045.png">
         <h1>Thanh Hub</h1>
         <p>:3</p>
         <h2>Bạn có muốn thử không?</h2>
         <a class="script-btn" id="scriptBtn">Lấy Script!</a>
     </div>
+    <div id="executor" class="content" style="display: none;">
+        <!-- Xóa "Executor Thanh Hub" và đoạn văn nhỏ -->
+        
+        <!-- Phần Delta bên trong Executor -->
+        <div style="margin-top: 2rem;">
+            <img src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/35740-delta.png" alt="Delta Logo" style="width: 150px; height: auto; border-radius: 10px;">
+            <h2>Delta Executor</h2>
+            <p>Chọn phiên bản Delta phù hợp với bạn:</p>
+            <button class="script-btn" id="showDeltaOptions">Xem Tùy Chọn</button>
+            <div id="delta-subcontent">
+                <h3>Phiên bản VNG 2.661</h3>
+                <a class="download-btn" href="https://www.mediafire.com/file/kh8uhsbbims16ol/Ronix_VNG_V2.661_%E2%80%94_Phong_Roblox.apk/file" target="_blank">Login Delta VNG 2.661</a>
+                <a class="download-btn" href="https://www.mediafire.com/file/lowvkivipzwtacd/Delta_X_VNG_V2.661_%E2%80%94_Phong_Roblox.apk/file" target="_blank">Tải Delta VNG 2.661</a>
+                <h3>Phiên bản Quốc Tế 2.662</h3>
+                <a class="download-btn" href="https://www.mediafire.com/file_premium/vh4rnpzrnsl1ter/Delta-662.537-01.apk/file" target="_blank">Tải Delta Quốc Tế 2.662</a>
+            </div>
+        </div>
+    </div>
+    <div id="zalo" class="content" style="display: none;">
+        <h1>Zalo Thanh Hub</h1>
+        <p>Tham gia nhóm Zalo để nhận hỗ trợ và cập nhật từ Thanh Hub!</p>
+        <a class="zalo-btn" id="zaloJoinBtn" href="https://zalo.me/g/gcxntt198" target="_blank">Tham gia nhóm Zalo</a>
+    </div>
+
     <div class="image-container" id="script-container">
         <img src="https://raw.githubusercontent.com/Thanhtv688/Thanhhub/refs/heads/main/Images/code.png">
         <div class="title">Thanh Hub Scripts</div>
@@ -385,23 +415,44 @@
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Đảm bảo trang tải xong trước khi chạy script
         document.addEventListener("DOMContentLoaded", function() {
-            // Thanh điều hướng
-            const menuToggle = document.getElementById("menuToggle");
-            const menuContainer = document.getElementById("menuContainer");
+            // Chuyển đổi nội dung và cuộn lên đầu trang
+            const menuLinks = document.querySelectorAll(".menu-items a");
+            const contents = document.querySelectorAll(".content");
 
-            menuToggle.addEventListener("click", function() {
-                if (menuContainer.classList.contains("expand")) {
-                    menuContainer.classList.remove("expand");
-                    menuToggle.classList.remove("rotating");
-                    menuToggle.textContent = "☰";
-                } else {
-                    menuContainer.classList.add("expand");
-                    menuToggle.classList.add("rotating");
-                    menuToggle.textContent = "×";
-                }
+            menuLinks.forEach(link => {
+                link.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute("data-section");
+
+                    // Ẩn tất cả nội dung
+                    contents.forEach(content => {
+                        content.classList.remove("show");
+                        content.style.display = "none";
+                    });
+
+                    // Hiển thị nội dung tương ứng
+                    const targetContent = document.getElementById(section);
+                    if (targetContent) {
+                        targetContent.style.display = "block";
+                        setTimeout(() => {
+                            targetContent.classList.add("show");
+                        }, 50); // Chờ một chút để áp dụng hiệu ứng
+
+                        // Cuộn lên đầu trang
+                        window.scrollTo({
+                            top: 0,
+                            behavior: "smooth"
+                        });
+                    }
+                });
             });
+
+            // Hiển thị nội dung Home mặc định khi tải trang
+            document.getElementById("home").style.display = "block";
+            setTimeout(() => {
+                document.getElementById("home").classList.add("show");
+            }, 50);
 
             // Script menu
             const scriptBtn = document.getElementById("scriptBtn");
@@ -414,6 +465,14 @@
 
             closeBtn.addEventListener("click", function() {
                 scriptContainer.classList.remove("show");
+            });
+
+            // Hiện subcontent của Delta trong Executor
+            const showDeltaOptionsBtn = document.getElementById("showDeltaOptions");
+            const deltaSubcontent = document.getElementById("delta-subcontent");
+
+            showDeltaOptionsBtn.addEventListener("click", function() {
+                deltaSubcontent.classList.toggle("show");
             });
 
             // Intersection Observer
@@ -429,7 +488,7 @@
                 }, { threshold: 0.3 });
                 elements.forEach(element => observer.observe(element));
             }
-            observeElements(".main, .image-container:not(#script-container), .image-container2, canvas");
+            observeElements(".image-container:not(#script-container), .image-container2, canvas");
 
             // Chart
             async function renderChart() {
@@ -473,5 +532,6 @@
             }, 100);
         });
     </script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'91cfec250e5e12e3',t:'MTc0MTQxMTYzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
