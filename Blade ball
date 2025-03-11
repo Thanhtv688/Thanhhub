@@ -1,41 +1,416 @@
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- Xác định múi giờ Việt Nam (GMT+7)
-local function getVietnamTime()
-    return os.time() + (7 * 3600)
+-- **Kiểm tra map**
+local GameID = game.PlaceId
+if GameID ~= 13772394625 then
+    game.Players.LocalPlayer:Kick("⚠ Script không hoạt động cho map này!")
+    return
 end
 
--- Thời gian kick (20:20 tối hôm nay, giờ Việt Nam)
-local kickTime = os.time({
-    year = os.date("*t", getVietnamTime()).year,
-    month = os.date("*t", getVietnamTime()).month,
-    day = os.date("*t", getVietnamTime()).day,
-    hour = 20,
-    min = 20,
-    sec = 0
-}) - (7 * 3600)
-
--- Hàm đếm ngược thời gian
-local function getRemainingTime()
-    local remaining = kickTime - os.time()
-    if remaining <= 0 then
-        return "Bảo trì đã kết thúc!"
-    else
-        local minutes = math.floor(remaining / 60)
-        local seconds = remaining % 60
-        return string.format("Bảo trì sẽ kết thúc sau: %02d phút %02d giây", minutes, seconds)
+local Executor = identifyexecutor and identifyexecutor() or "Unknown"
+local BlacklistedExecutors = { "Solara", "Ronix", "Ghost", "Unknown" }
+for _, exec in pairs(BlacklistedExecutors) do
+    if Executor == exec then
+        game.Players.LocalPlayer:Kick("⚠ Executor không được hỗ trợ!")
+        return
     end
 end
 
--- Kiểm tra và kick người chơi
-if os.time() < kickTime then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Thanh Hub Bảo Trì",
-        Text = getRemainingTime(),
-        Duration = 5
-    })
-    
-    wait(3)
-    LocalPlayer:Kick("Thanh Hub đang bảo trì.\n" .. getRemainingTime())
+-- **Tải thư viện Fluent UI**
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+-- Thông báo bước 1/4
+Fluent:Notify({
+    Title = "📚 Bước 1/4: Tải thư viện",
+    Content = "Đã tải xong Fluent UI, SaveManager và InterfaceManager.",
+    Duration = 2
+})
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local UserInputService = game:GetService("UserInputService")
+
+-- **Tải danh sách ban từ URL**
+local BanData
+local success, response = pcall(function()
+    return game:HttpGet("https://raw.githubusercontent.com/Chubedan3/TH/refs/heads/main/Ban", true)
+end)
+if success and response then
+    local successLoad, data = pcall(loadstring(response))
+    if successLoad and type(data) == "table" then
+        BanData = data
+    end
 end
+if not BanData then
+    BanData = { BanVinhVien = {}, BanTamThoi = {} }
+end
+
+-- Thông báo bước 2/4
+Fluent:Notify({
+    Title = "🔒 Bước 2/4: Kiểm tra ban",
+    Content = "Đã tải danh sách ban và kiểm tra trạng thái người chơi.",
+    Duration = 2
+})
+
+-- **Kiểm tra nếu người chơi bị ban**
+local function KiemTraBan()
+    local UserID = LocalPlayer.UserId
+    for _, ID in pairs(BanData.BanVinhVien) do
+        if UserID == ID then
+            LocalPlayer:Kick("🚫 Bạn đã bị ban vĩnh viễn khỏi Thanh Hub!")
+            return true
+        end
+    end
+    if BanData.BanTamThoi[UserID] then
+        if os.time() < BanData.BanTamThoi[UserID] then
+            LocalPlayer:Kick("⏳ Bạn bị ban tạm thời trong 1 ngày! Hãy thử lại sau.")
+            return true
+        else
+            BanData.BanTamThoi[UserID] = nil
+        end
+    end
+    return false
+end
+
+if KiemTraBan() then return end
+
+-- **Gửi Webhook**
+local WebhookURL = game:HttpGet("https://drive.google.com/uc?export=download&id=1wwR25jdkdz8iswuP0PV5Wis_BRX_-MhP")
+local TenNguoiChoi = LocalPlayer.Name
+local IDNguoiChoi = LocalPlayer.UserId
+local AvatarURL = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. IDNguoiChoi .. "&width=420&height=420&format=png"
+
+local DuLieu = {
+    ["username"] = "Thanh Hub Webhook",
+    ["embeds"] = {{
+        ["title"] = "🔍 Kiểm tra người chơi (từ Blade Ball)",
+        ["description"] = "**Tên người chơi:** " .. TenNguoiChoi ..  
+                         "\n**ID:** " .. IDNguoiChoi ..  
+                         "\n**Executor:** " .. Executor,
+        ["color"] = 16776960,
+        ["thumbnail"] = { ["url"] = AvatarURL }
+    }}
+}
+
+local function sendRequest(data)
+    local httpRequest = http and http.request or syn and syn.request or request
+    if httpRequest then
+        httpRequest({
+            Url = WebhookURL,
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = HttpService:JSONEncode(data)
+        })
+    end
+end
+
+pcall(function() sendRequest(DuLieu) end)
+
+-- **Khởi tạo GUI với Fluent UI**
+local Window = Fluent:CreateWindow({
+    Title = "Thanh Hub | Blade Ball | v0.3 (Beta)",
+    SubTitle = "",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(450, 300),
+    Acrylic = true,
+    Theme = "Rose", -- Giữ giao diện đỏ nhạt giống MM2
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+-- Thông báo bước 3/4
+Fluent:Notify({
+    Title = "🖥️ Bước 3/4: Khởi tạo GUI",
+    Content = "Cửa sổ Thanh Hub đã được tạo với giao diện đỏ nhạt.",
+    Duration = 2
+})
+
+local Tabs = {
+    Chinh = Window:AddTab({ Title = "🏠 Trang Chính", Icon = "home" }),
+    ChienDau = Window:AddTab({ Title = "⚔ Chiến Đấu", Icon = "sword" }),
+    DichChuyen = Window:AddTab({ Title = "🗺 Dịch Chuyển", Icon = "map" }),
+    CaiDat = Window:AddTab({ Title = "⚙ Cài Đặt", Icon = "settings" }),
+    HoTro = Window:AddTab({ Title = "📩 Hỗ Trợ", Icon = "help-circle" })
+}
+
+local Options = Fluent.Options
+
+-- **Tab Trang Chính**
+Tabs.Chinh:AddParagraph({
+    Title = "🔹 Chào mừng bạn đến với Thanh Hub Blade Ball!",
+    Content = "Phần Chính sẽ được update thêm sau:3"
+})
+
+-- **Tab Chiến Đấu**
+local Player = Players.LocalPlayer
+local Cooldown = tick()
+local IsParried = false
+local Connection = nil
+local AutoParryEnabled = false
+local SpamToggleEnabled = false
+local AntiCurveEnabled = false
+local SpamButton = nil
+
+local function GetBall()
+    for _, Ball in ipairs(workspace.Balls:GetChildren()) do
+        if Ball:GetAttribute("realBall") then
+            return Ball
+        end
+    end
+end
+
+local function ResetConnection()
+    if Connection then
+        Connection:Disconnect()
+        Connection = nil
+    end
+end
+
+workspace.Balls.ChildAdded:Connect(function()
+    if not AutoParryEnabled then return end
+    local Ball = GetBall()
+    if not Ball then return end
+    ResetConnection()
+    Connection = Ball:GetAttributeChangedSignal("target"):Connect(function()
+        IsParried = false
+    end)
+end)
+
+RunService.PreSimulation:Connect(function()
+    if not AutoParryEnabled then return end
+    local Ball = GetBall()
+    local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not Ball or not HRP then return end
+
+    local Speed = Ball.zoomies.VectorVelocity.Magnitude
+    local Distance = (HRP.Position - Ball.Position).Magnitude
+
+    if AntiCurveEnabled then
+        local BallVelocity = Ball.zoomies.VectorVelocity
+        local BallDirection = BallVelocity.Unit
+        local PlayerDirection = (HRP.Position - Ball.Position).Unit
+        local Angle = BallDirection:Dot(PlayerDirection)
+        if Angle < 0.9 then return end
+    end
+
+    if Ball:GetAttribute("target") == Player.Name and not IsParried and Distance / Speed <= 0.55 then
+        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+        IsParried = true
+        Cooldown = tick()
+    end
+
+    if (tick() - Cooldown) >= 1 then
+        IsParried = false
+    end
+end)
+
+local function CreateSpamButton()
+    if SpamButton then return end
+    SpamButton = Instance.new("TextButton")
+    SpamButton.Name = "SpamToggle"
+    SpamButton.Size = UDim2.new(0, 100, 0, 50)
+    SpamButton.Position = UDim2.new(0.8, 0, 0.2, 0)
+    SpamButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    SpamButton.Text = "Spam: OFF"
+    SpamButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SpamButton.Font = Enum.Font.SourceSansBold
+    SpamButton.TextSize = 20
+    SpamButton.Parent = game.CoreGui
+
+    local Dragging = false
+    local DragInput, MousePos, FramePos
+
+    SpamButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            Dragging = true
+            MousePos = input.Position
+            FramePos = SpamButton.Position
+        end
+    end)
+
+    SpamButton.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            DragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == DragInput and Dragging then
+            local Delta = input.Position - MousePos
+            local NewPos = UDim2.new(
+                math.clamp(FramePos.X.Scale + Delta.X / game:GetService("Workspace").CurrentCamera.ViewportSize.X, 0, 0.9),
+                0,
+                math.clamp(FramePos.Y.Scale + Delta.Y / game:GetService("Workspace").CurrentCamera.ViewportSize.Y, 0, 0.9),
+                0
+            )
+            SpamButton.Position = NewPos
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            Dragging = false
+        end
+    end)
+
+    SpamButton.MouseButton1Click:Connect(function()
+        SpamToggleEnabled = not SpamToggleEnabled
+        SpamButton.Text = SpamToggleEnabled and "Spam: ON" or "Spam: OFF"
+        while SpamToggleEnabled do
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+            task.wait()
+        end
+    end)
+end
+
+Tabs.ChienDau:AddToggle("AutoParry", {
+    Title = "🛡 Auto Chém",
+    Default = false,
+    Callback = function(state)
+        AutoParryEnabled = state
+    end
+})
+
+Tabs.ChienDau:AddToggle("AntiCurve", {
+    Title = "🎯 Anti Bóng Bay Chéo/Lệch hướng",
+    Default = false,
+    Callback = function(state)
+        AntiCurveEnabled = state
+    end
+})
+
+Tabs.ChienDau:AddToggle("SpamToggle", {
+    Title = "⚡ Tạo nút Spam (sẽ có trong bản chính thức)",
+    Default = false,
+    Callback = function(state)
+        if state then CreateSpamButton() end
+    end
+})
+
+-- **Tab Dịch Chuyển**
+Tabs.DichChuyen:AddButton({
+    Title = "🚀 Dịch chuyển lên cao",
+    Description = "Dịch chuyển lên 50 đơn vị",
+    Callback = function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.CFrame = hrp.CFrame + Vector3.new(0, 50, 0) end
+    end
+})
+
+-- **Tab Cài Đặt**
+Tabs.CaiDat:AddButton({
+    Title = "🔄 Tải lại máy chủ",
+    Description = "Tái tham gia server",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(game.PlaceId, LocalPlayer)
+    end
+})
+
+-- **Tab Hỗ Trợ**
+Tabs.HoTro:AddParagraph({
+    Title = "Hãy nhập yêu cầu hoặc trợ giúp vào đây",
+    Content = "Thanh Hub sẽ xem xét và cố gắng thực hiện hoặc sửa lỗi, lưu ý không gửi những tin nhắn bậy bạ vì nó sẽ được gửi cho Thanh Hub nếu không bạn sẽ bị ban khỏi Thanh Hub 1 ngày, spam bạn sẽ 5 tiếng"
+})
+
+local NoiDungYeuCau = ""
+Tabs.HoTro:AddInput("YeuCauInput", {
+    Title = "📜 Nhập yêu cầu hoặc trợ giúp",
+    Default = "",
+    Placeholder = "Nhập nội dung...",
+    Callback = function(value)
+        NoiDungYeuCau = value
+    end
+})
+
+local DemSoLanGui = {}
+local ThoiGianHienTai = os.date("*t")
+
+local function KiemTraGioiHan(NguoiChoi)
+    local IDNguoiChoi = NguoiChoi.UserId
+    if not DemSoLanGui[IDNguoiChoi] then
+        DemSoLanGui[IDNguoiChoi] = { SoLan = 0, Ngay = ThoiGianHienTai.day }
+    end
+    if DemSoLanGui[IDNguoiChoi].Ngay ~= ThoiGianHienTai.day then
+        DemSoLanGui[IDNguoiChoi].SoLan = 0
+        DemSoLanGui[IDNguoiChoi].Ngay = ThoiGianHienTai.day
+    end
+    if DemSoLanGui[IDNguoiChoi].SoLan >= 60 then return false end
+    DemSoLanGui[IDNguoiChoi].SoLan = DemSoLanGui[IDNguoiChoi].SoLan + 1
+    return true
+end
+
+Tabs.HoTro:AddButton({
+    Title = "📨 Gửi Yêu Cầu",
+    Description = "Gửi yêu cầu đến Thanh Hub",
+    Callback = function()
+        local NguoiChoi = LocalPlayer
+        if not KiemTraGioiHan(NguoiChoi) then
+            Fluent:Notify({ Title = "⛔ Bị Cấm", Content = "Bạn đã gửi quá 60 yêu cầu trong ngày!", Duration = 5 })
+            return
+        end
+        if NoiDungYeuCau == "" then
+            Fluent:Notify({ Title = "⚠ Lỗi", Content = "Bạn chưa nhập nội dung yêu cầu!", Duration = 3 })
+            return
+        end
+        local WebhookURL = game:HttpGet("https://drive.google.com/uc?export=download&id=1wwDQluZHISyNgRUtBbxLjjFxcmHwprZS")
+        local TenNguoiChoi = NguoiChoi.Name
+        local IDNguoiChoi = NguoiChoi.UserId
+        local AvatarURL = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. IDNguoiChoi .. "&width=420&height=420&format=png"
+        local DuLieu = {
+            ["username"] = "Thanh Hub Webhook",
+            ["embeds"] = {{
+                ["title"] = "📩 Yêu Cầu Mới Từ: " .. TenNguoiChoi .. " (ID: " .. IDNguoiChoi .. ") (từ Blade Ball)",
+                ["description"] = NoiDungYeuCau,
+                ["color"] = 16711680,
+                ["thumbnail"] = { ["url"] = AvatarURL }
+            }}
+        }
+        local DuLieuJSON = HttpService:JSONEncode(DuLieu)
+        local thanhCong = pcall(function()
+            (http and http.request or syn and syn.request or request)({
+                Url = WebhookURL,
+                Method = "POST",
+                Headers = { ["Content-Type"] = "application/json" },
+                Body = DuLieuJSON
+            })
+        end)
+        if thanhCong then
+            NoiDungYeuCau = ""
+            Options.YeuCauInput:SetValue("")
+            Fluent:Notify({ Title = "✅ Thành Công", Content = "Yêu cầu đã được gửi!", Duration = 3 })
+        else
+            Fluent:Notify({ Title = "❌ Lỗi", Content = "Không thể gửi yêu cầu! (Webhook lỗi)", Duration = 5 })
+        end
+    end
+})
+
+-- **Hiển thị thông báo chào mừng**
+Fluent:Notify({
+    Title = "🎉 Chào Mừng đến với Thanh Hub!",
+    Content = "Chúc bạn chơi vui vẻ",
+    Duration = 4
+})
+
+-- **Cấu hình SaveManager và InterfaceManager**
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+SaveManager:SetFolder("ThanhHubConfig")
+InterfaceManager:SetFolder("ThanhHubConfig")
+SaveManager:BuildConfigSection(Tabs.CaiDat)
+InterfaceManager:BuildInterfaceSection(Tabs.CaiDat)
+
+-- Thông báo bước 4/4
+Fluent:Notify({
+    Title = "✅ Bước 4/4: Hoàn tất",
+    Content = "Thanh Hub đã sẵn sàng để sử dụng!",
+    Duration = 3
+})
+
+Window:SelectTab(1)
+SaveManager:LoadAutoloadConfig()
