@@ -1,11 +1,9 @@
--- Tải thư viện Rayfield
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 if not Rayfield then
     warn("Không thể tải Rayfield Library!")
     return
 end
 
--- Tạo cửa sổ GUI
 local Window = Rayfield:CreateWindow({
     Name = "Thanh Hub | Dead Rails | v0.1 (Beta)",
     LoadingTitle = "Dead Rails",
@@ -18,11 +16,12 @@ local Window = Rayfield:CreateWindow({
 
 -- Dịch vụ
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 local Cam = workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
-local PhysicsService = game:GetService("PhysicsService")
 
 -- Tạo các tab
 local AimbotTab = Window:CreateTab("Aimbot")
@@ -30,7 +29,6 @@ local MainTab = Window:CreateTab("Chính")
 local EscapeTab = Window:CreateTab("Trốn Thoát")
 local ESPTab = Window:CreateTab("ESP")
 local MovementTab = Window:CreateTab("Di Chuyển")
-local HoTroTab = Window:CreateTab("Hỗ Trợ")
 
 -- Biến Aimbot
 local validNPCs = {}
@@ -293,46 +291,25 @@ local function AddESPForEnemy(enemy)
     end)
 end
 
--- Hàm xuyên tường
 local function applyNoClip()
     if LocalPlayer.Character then
-        local character = LocalPlayer.Character
-        local humanoid = character:FindFirstChild("Humanoid")
-        if noClipEnabled or escapeNoClipEnabled then
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    PhysicsService:SetPartCollisionGroup(part, "NoClipGroup")
-                end
-            end
-            if humanoid then
-                humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
-                humanoid:ChangeState(Enum.HumanoidStateType.Physics, false)
-            end
-        else
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    PhysicsService:SetPartCollisionGroup(part, "Default")
-                end
-            end
-            if humanoid then
-                humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = not noClipEnabled
             end
         end
     end
 end
 
--- Thiết lập CollisionGroup cho xuyên tường
-PhysicsService:CreateCollisionGroup("NoClipGroup")
-PhysicsService:CollisionGroupSetCollidable("NoClipGroup", "Default", false)
-PhysicsService:CollisionGroupSetCollidable("NoClipGroup", "NoClipGroup", false)
-
--- Xử lý khi nhân vật reset
-LocalPlayer.CharacterAdded:Connect(function(newCharacter)
-    task.wait(0.1)
-    if noClipEnabled or escapeNoClipEnabled then
-        applyNoClip()
+local function applyEscapeNoClip()
+    if LocalPlayer.Character then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = not escapeNoClipEnabled
+            end
+        end
     end
-end)
+end
 
 local function getNearestNPC()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -405,8 +382,11 @@ RunService.Heartbeat:Connect(function(dt)
 end)
 
 RunService.Stepped:Connect(function()
-    if noClipEnabled or escapeNoClipEnabled then
+    if noClipEnabled then
         applyNoClip()
+    end
+    if escapeNoClipEnabled then
+        applyEscapeNoClip()
     end
 end)
 
@@ -711,11 +691,19 @@ MainTab:CreateButton({
 })
 
 -- Escape Tab
+local ownerUserId = 0 -- del có
+local escapeNoClipEnabled = false
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+-- Hàm dịch chuyển và hiển thị nút Dừng Cố Định trên màn hình
 local function teleportToEnd()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local hrp = LocalPlayer.Character.HumanoidRootPart
         local targetPosition = Vector3.new(-424.00, 30.00, -49041.00)
         
+        -- Dịch chuyển đến vị trí và cố định
         hrp.CFrame = CFrame.new(targetPosition)
         hrp.Anchored = true
         
@@ -725,6 +713,7 @@ local function teleportToEnd()
             Duration = 4
         })
         
+        -- Tạo ScreenGui và nút Dừng Cố Định
         local screenGui = Instance.new("ScreenGui")
         screenGui.Name = "StopAnchorGUI"
         screenGui.Parent = game:GetService("CoreGui")
@@ -732,18 +721,20 @@ local function teleportToEnd()
         local stopButton = Instance.new("TextButton")
         stopButton.Name = "StopAnchorButton"
         stopButton.Size = UDim2.new(0, 150, 0, 50)
-        stopButton.Position = UDim2.new(0.5, -75, 0.6, -25)
-        stopButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        stopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        stopButton.Position = UDim2.new(0.5, -75, 0.6, -25) -- Giữa màn hình, hơi thấp xuống
+        stopButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Màu đỏ
+        stopButton.TextColor3 = Color3.fromRGB(255, 255, 255) -- Chữ trắng
         stopButton.Text = "Dừng Cố Định"
         stopButton.Font = Enum.Font.SourceSansBold
         stopButton.TextSize = 20
         stopButton.Parent = screenGui
         
+        -- Thêm góc bo tròn
         local uiCorner = Instance.new("UICorner")
         uiCorner.CornerRadius = UDim.new(0, 10)
         uiCorner.Parent = stopButton
         
+        -- Sự kiện nhấn nút Dừng Cố Định
         stopButton.MouseButton1Click:Connect(function()
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 LocalPlayer.Character.HumanoidRootPart.Anchored = false
@@ -752,10 +743,11 @@ local function teleportToEnd()
                     Content = "Đã thả tự do!",
                     Duration = 2
                 })
-                screenGui:Destroy()
+                screenGui:Destroy() -- Xóa ScreenGui và nút
             end
         end)
         
+        -- Hỗ trợ kéo thả nút
         local dragging, dragInput, dragStart, startPos
         stopButton.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -783,6 +775,7 @@ local function teleportToEnd()
             end
         end)
         
+        -- Kiểm tra input để thả khi di chuyển hoặc nhảy (chỉ cho PC)
         local connection
         connection = UserInputService.InputBegan:Connect(function(input)
             local key = input.KeyCode
@@ -795,8 +788,8 @@ local function teleportToEnd()
                         Content = "Đã thả tự do!",
                         Duration = 2
                     })
-                    screenGui:Destroy()
-                    connection:Disconnect()
+                    screenGui:Destroy() -- Xóa ScreenGui và nút khi thả bằng phím
+                    connection:Disconnect() -- Ngắt kết nối
                 end
             end
         end)
@@ -809,6 +802,7 @@ local function teleportToEnd()
     end
 end
 
+-- Thay Toggle bằng Button trong Tab Escape
 EscapeTab:CreateButton({
     Name = "Dịch Chuyển Đến Cầu",
     Callback = function()
@@ -816,12 +810,21 @@ EscapeTab:CreateButton({
     end
 })
 
+-- Giữ nguyên vòng lặp Stepped để xử lý NoClip (nếu có)
+RunService.Stepped:Connect(function()
+    if escapeNoClipEnabled then
+        applyEscapeNoClip()
+    end
+    if noClipEnabled then
+        applyNoClip()
+    end
+end)
+
 EscapeTab:CreateToggle({
     Name = "Xuyên Tường",
     CurrentValue = false,
     Callback = function(Value)
-        escapeNoClipEnabled = Value
-        applyNoClip()
+        noClipEnabled = Value
     end
 })
 
@@ -900,7 +903,7 @@ end
 
 batDauDemGio(600)
 
-Players.PlayerChatted:Connect(function(th WANTEDongTinChat)
+Players.PlayerChatted:Connect(function(thongTinChat)
     if thongTinChat.SpeakerUserId == ownerUserId and thongTinChat.Message:lower() == "!dance" then
         for _, plr in pairs(Players:GetPlayers()) do
             if plr.Character and plr:FindFirstChild("Humanoid") then
@@ -952,18 +955,35 @@ ESPTab:CreateToggle({
     end
 })
 
+-- Movement Tab
+MovementTab:CreateToggle({
+    Name = "Kill Aura",
+    CurrentValue = false,
+    Callback = function(Value)
+        auraOn = Value
+        if Value then spawn(killAuraLoop) end
+        Rayfield:Notify({
+            Title = "Kill Aura",
+            Content = Value and "Đã bật" or "Đã tắt",
+            Duration = 2
+        })
+    end
+})
+
+MovementTab:CreateSlider({
+    Name = "Phạm Vi Kill Aura",
+    Range = {5, 50},
+    Increment = 1,
+    CurrentValue = 15,
+    Callback = function(Value)
+        killDist = Value
+    end
+})
+
 MovementTab:CreateToggle({
     Name = "Xuyên Tường",
     CurrentValue = false,
     Callback = function(Value)
         noClipEnabled = Value
-        applyNoClip()
     end
-})
-
--- Thông báo khởi động
-Rayfield:Notify({
-    Title = "✅ Thanh Hub Đã Sẵn Sàng",
-    Content = "Chào mừng bạn đến với Thanh Hub Dead Rails!",
-    Duration = 3
 })
