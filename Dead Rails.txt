@@ -1,87 +1,9 @@
--- Kiểm tra Executor
-local Executor = identifyexecutor and identifyexecutor() or "Unknown"
-local BlacklistedExecutors = { "Solara", "Ronix", "Ghost", "Unknown" }
-
-for _, exec in pairs(BlacklistedExecutors) do
-    if Executor == exec then
-        game.Players.LocalPlayer:Kick("⚠ Executor không được hỗ trợ!")
-        return
-    end
-end
-
--- Dịch vụ
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- Tải danh sách ban từ URL
-local BanData
-local success, response = pcall(function()
-    return game:HttpGet("https://raw.githubusercontent.com/Chubedan3/TH/refs/heads/main/Ban", true)
-end)
-
-if success and response then
-    BanData = loadstring(response)() or { BanVinhVien = {}, BanTamThoi = {} }
-else
-    BanData = { BanVinhVien = {}, BanTamThoi = {} }
-end
-
--- Kiểm tra nếu người chơi bị ban
-local function KiemTraBan()
-    local UserID = LocalPlayer.UserId
-    for _, ID in ipairs(BanData.BanVinhVien) do
-        if UserID == ID then
-            LocalPlayer:Kick("🚫 Bạn đã bị ban vĩnh viễn khỏi Thanh Hub!")
-            return true
-        end
-    end
-    if BanData.BanTamThoi[UserID] and os.time() < BanData.BanTamThoi[UserID] then
-        LocalPlayer:Kick("⏳ Bạn bị ban tạm thời trong 1 ngày! Hãy thử lại sau.")
-        return true
-    elseif BanData.BanTamThoi[UserID] then
-        BanData.BanTamThoi[UserID] = nil
-    end
-    return false
-end
-
-if KiemTraBan() then return end
-
--- Gửi thông tin người dùng qua Webhook (Kiểm tra người dùng)
-local WebhookURL = game:HttpGet("https://drive.google.com/uc?export=download&id=1wwR25jdkdz8iswuP0PV5Wis_BRX_-MhP")
-local function sendWebhook()
-    local httpRequest = http and http.request or syn and syn.request or request
-    if httpRequest then
-        local data = {
-            ["username"] = "Thanh Hub Webhook",
-            ["embeds"] = {{
-                ["title"] = "🔍 Kiểm tra người chơi (từ Dead Rails)",
-                ["description"] = "**Tên người chơi:** " .. LocalPlayer.Name ..  
-                                 "\n**ID:** " .. LocalPlayer.UserId ..  
-                                 "\n**Executor:** " .. Executor,
-                ["color"] = 16776960,
-                ["thumbnail"] = { ["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LocalPlayer.UserId .. "&width=420&height=420&format=png" }
-            }}
-        }
-        pcall(function()
-            httpRequest({
-                Url = WebhookURL,
-                Method = "POST",
-                Headers = { ["Content-Type"] = "application/json" },
-                Body = HttpService:JSONEncode(data)
-            })
-        end)
-    end
-end
-spawn(sendWebhook)
-
--- Tải thư viện Rayfield
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 if not Rayfield then
     warn("Không thể tải Rayfield Library!")
     return
 end
 
--- Tạo cửa sổ GUI
 local Window = Rayfield:CreateWindow({
     Name = "Thanh Hub | Dead Rails | v0.1 (Beta)",
     LoadingTitle = "Dead Rails",
@@ -94,6 +16,8 @@ local Window = Rayfield:CreateWindow({
 
 -- Dịch vụ
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 local Cam = workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -106,7 +30,6 @@ local MainTab = Window:CreateTab("Chính")
 local EscapeTab = Window:CreateTab("Trốn Thoát")
 local ESPTab = Window:CreateTab("ESP")
 local MovementTab = Window:CreateTab("Di Chuyển")
-local HoTroTab = Window:CreateTab("Hỗ Trợ")
 
 -- Biến Aimbot
 local validNPCs = {}
@@ -369,12 +292,13 @@ local function AddESPForEnemy(enemy)
     end)
 end
 
--- Hàm xuyên tường
+-- Hàm xuyên tường mới
 local function applyNoClip()
     if LocalPlayer.Character then
         local character = LocalPlayer.Character
         local humanoid = character:FindFirstChild("Humanoid")
         if noClipEnabled or escapeNoClipEnabled then
+            -- Đặt nhân vật vào CollisionGroup không va chạm
             for _, part in ipairs(character:GetDescendants()) do
                 if part:IsA("BasePart") then
                     PhysicsService:SetPartCollisionGroup(part, "NoClipGroup")
@@ -385,6 +309,7 @@ local function applyNoClip()
                 humanoid:ChangeState(Enum.HumanoidStateType.Physics, false)
             end
         else
+            -- Khôi phục va chạm
             for _, part in ipairs(character:GetDescendants()) do
                 if part:IsA("BasePart") then
                     PhysicsService:SetPartCollisionGroup(part, "Default")
@@ -404,7 +329,7 @@ PhysicsService:CollisionGroupSetCollidable("NoClipGroup", "NoClipGroup", false)
 
 -- Xử lý khi nhân vật reset
 LocalPlayer.CharacterAdded:Connect(function(newCharacter)
-    task.wait(0.1)
+    task.wait(0.1) -- Đợi nhân vật tải xong
     if noClipEnabled or escapeNoClipEnabled then
         applyNoClip()
     end
@@ -787,11 +712,19 @@ MainTab:CreateButton({
 })
 
 -- Escape Tab
+local ownerUserId = 0
+local escapeNoClipEnabled = false
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+-- Hàm dịch chuyển và hiển thị nút Dừng Cố Định trên màn hình
 local function teleportToEnd()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local hrp = LocalPlayer.Character.HumanoidRootPart
         local targetPosition = Vector3.new(-424.00, 30.00, -49041.00)
         
+        -- Dịch chuyển đến vị trí và cố định
         hrp.CFrame = CFrame.new(targetPosition)
         hrp.Anchored = true
         
@@ -801,6 +734,7 @@ local function teleportToEnd()
             Duration = 4
         })
         
+        -- Tạo ScreenGui và nút Dừng Cố Định
         local screenGui = Instance.new("ScreenGui")
         screenGui.Name = "StopAnchorGUI"
         screenGui.Parent = game:GetService("CoreGui")
@@ -816,10 +750,12 @@ local function teleportToEnd()
         stopButton.TextSize = 20
         stopButton.Parent = screenGui
         
+        -- Thêm góc bo tròn
         local uiCorner = Instance.new("UICorner")
         uiCorner.CornerRadius = UDim.new(0, 10)
         uiCorner.Parent = stopButton
         
+        -- Sự kiện nhấn nút Dừng Cố Định
         stopButton.MouseButton1Click:Connect(function()
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 LocalPlayer.Character.HumanoidRootPart.Anchored = false
@@ -832,6 +768,7 @@ local function teleportToEnd()
             end
         end)
         
+        -- Hỗ trợ kéo thả nút
         local dragging, dragInput, dragStart, startPos
         stopButton.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -859,6 +796,7 @@ local function teleportToEnd()
             end
         end)
         
+        -- Kiểm tra input để thả khi di chuyển hoặc nhảy
         local connection
         connection = UserInputService.InputBegan:Connect(function(input)
             local key = input.KeyCode
@@ -885,6 +823,7 @@ local function teleportToEnd()
     end
 end
 
+-- Thay Toggle bằng Button trong Tab Escape
 EscapeTab:CreateButton({
     Name = "Dịch Chuyển Đến Cầu",
     Callback = function()
@@ -892,90 +831,13 @@ EscapeTab:CreateButton({
     end
 })
 
+-- Giữ toggle xuyên tường trong EscapeTab
 EscapeTab:CreateToggle({
     Name = "Xuyên Tường",
     CurrentValue = false,
     Callback = function(Value)
         escapeNoClipEnabled = Value
         applyNoClip()
-    end
-})
-
--- Tab Hỗ Trợ
-local HoTroSection = HoTroTab:CreateSection("📩 Hỗ Trợ")
-HoTroSection:CreateParagraph({
-    Name = "HuongDanHoTro",
-    Title = "Hỗ Trợ",
-    Content = "Nhập yêu cầu, tránh spam hoặc nội dung không phù hợp để không bị ban."
-})
-
-local NoiDungYeuCau = ""
-HoTroSection:CreateInput({
-    Name = "YeuCauInput",
-    Title = "📜 Nhập yêu cầu",
-    PlaceholderText = "Nhập nội dung...",
-    Callback = function(value)
-        NoiDungYeuCau = value
-    end
-})
-
-local DemSoLanGui = {}
-local ThoiGianHienTai = os.date("*t")
-local function KiemTraGioiHan()
-    local ID = LocalPlayer.UserId
-    if not DemSoLanGui[ID] then DemSoLanGui[ID] = { SoLan = 0, Ngay = ThoiGianHienTai.day } end
-    if DemSoLanGui[ID].Ngay ~= ThoiGianHienTai.day then
-        DemSoLanGui[ID] = { SoLan = 0, Ngay = ThoiGianHienTai.day }
-    end
-    if DemSoLanGui[ID].SoLan >= 60 then return false end
-    DemSoLanGui[ID].SoLan += 1
-    return true
-end
-
-HoTroSection:CreateButton({
-    Name = "GuiYeuCau",
-    Title = "📨 Gửi Yêu Cầu",
-    Callback = function()
-        if not KiemTraGioiHan() then
-            Rayfield:Notify({
-                Title = "⛔ Bị Cấm",
-                Content = "Quá 60 yêu cầu/ngày!",
-                Duration = 5
-            })
-            return
-        end
-        if NoiDungYeuCau == "" then
-            Rayfield:Notify({
-                Title = "⚠ Lỗi",
-                Content = "Chưa nhập nội dung!",
-                Duration = 3
-            })
-            return
-        end
-        local WebhookURL = game:HttpGet("https://drive.google.com/uc?export=download&id=1wwDQluZHISyNgRUtBbxLjjFxcmHwprZS")
-        local data = {
-            ["username"] = "Thanh Hub Webhook",
-            ["embeds"] = {{
-                ["title"] = "📩 Yêu Cầu Mới Từ: " .. LocalPlayer.Name .. " (ID: " .. LocalPlayer.UserId .. ") (Dead Rails)",
-                ["description"] = NoiDungYeuCau,
-                ["color"] = 16711680,
-                ["thumbnail"] = { ["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LocalPlayer.UserId .. "&width=420&height=420&format=png" }
-            }}
-        }
-        pcall(function()
-            (http and http.request or syn and syn.request or request)({
-                Url = WebhookURL,
-                Method = "POST",
-                Headers = { ["Content-Type"] = "application/json" },
-                Body = HttpService:JSONEncode(data)
-            })
-        end)
-        NoiDungYeuCau = ""
-        Rayfield:Notify({
-            Title = "Thành Công",
-            Content = "Yêu cầu đã được gửi!",
-            Duration = 3
-        })
     end
 })
 
@@ -1054,7 +916,7 @@ end
 
 batDauDemGio(600)
 
-Players.PlayerChatted:Connect(function(th WANTEDongTinChat)
+Players.PlayerChatted:Connect(function(thongTinChat)
     if thongTinChat.SpeakerUserId == ownerUserId and thongTinChat.Message:lower() == "!dance" then
         for _, plr in pairs(Players:GetPlayers()) do
             if plr.Character and plr:FindFirstChild("Humanoid") then
@@ -1104,6 +966,31 @@ ESPTab:CreateToggle({
     Callback = function(Value)
         ESPZombyEnabled = Value
     end
+end)
+
+-- Movement Tab
+MovementTab:CreateToggle({
+    Name = "Kill Aura",
+    CurrentValue = false,
+    Callback = function(Value)
+        auraOn = Value
+        if Value then spawn(killAuraLoop) end
+        Rayfield:Notify({
+            Title = "Kill Aura",
+            Content = Value and "Đã bật" or "Đã tắt",
+            Duration = 2
+        })
+    end
+})
+
+MovementTab:CreateSlider({
+    Name = "Phạm Vi Kill Aura",
+    Range = {5, 50},
+    Increment = 1,
+    CurrentValue = 15,
+    Callback = function(Value)
+        killDist = Value
+    end
 })
 
 MovementTab:CreateToggle({
@@ -1113,11 +1000,4 @@ MovementTab:CreateToggle({
         noClipEnabled = Value
         applyNoClip()
     end
-})
-
--- Thông báo khởi động
-Rayfield:Notify({
-    Title = "✅ Thanh Hub Đã Sẵn Sàng",
-    Content = "Chào mừng bạn đến với Thanh Hub Dead Rails!",
-    Duration = 3
 })
