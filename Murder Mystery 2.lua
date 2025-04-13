@@ -1,3 +1,8 @@
+-- Tải thư viện Fluent UI
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuaCrack/Library/78b99523c0413609a998e34bc3dda1328f25f63e/LibraryFluent.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
 -- Kiểm tra ID map
 if game.PlaceId ~= 142823291 then
     game.Players.LocalPlayer:Kick("⚠ Script không hoạt động cho map này!")
@@ -14,10 +19,11 @@ for _, exec in pairs(BlacklistedExecutors) do
     end
 end
 
--- Tải thư viện Fluent UI
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuaCrack/Library/78b99523c0413609a998e34bc3dda1328f25f63e/LibraryFluent.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+Fluent:Notify({
+    Title = "Thanh Hub",
+    Content = "Đang tải..",
+    Duration = 5
+})
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -114,7 +120,7 @@ local Options = Fluent.Options
 
 -- Tab Cập Nhật
 Tabs.CapNhat:AddParagraph({
-    Title = "📜 Cập Nhật Mới 4/3/2025 - v0.25",
+    Title = "📜 Cập Nhật Mới 13/4/2025 - v0.3",
     Content = "🔹 Update v0.3: Thêm nút bấm bật/tắt GUI, Fix lỗi hiển thị highlight vai trò.\n🔹 Chức năng mới\n + Giết tất cả (khi làm Murder).\n + Speed glitch (khi vừa chạy vừa nhảy sẽ tăng tốc theo mức điều chỉnh).\n + 📛 ESP Vai Trò Bằng Tên Người Chơi"
 })
 
@@ -135,7 +141,6 @@ local highlightConnection
 -- ESP Tên Người Chơi
 local runningNameESP = false
 local nameESPConnections = {}
-local ESPSection = Tabs.HienThi:AddSection("📛 ESP Tên Người Chơi")
 local defaultHighlightColor = Color3.fromRGB(128, 128, 128) -- Màu xám mặc định
 
 -- Hàm tạo BillboardGui hiển thị tên
