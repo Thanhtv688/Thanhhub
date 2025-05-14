@@ -210,7 +210,7 @@ end)
 -- Hàm khởi chạy script từ URL
 function runScript()
     local success, err = pcall(function()
-        loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/de31dbd78602a0684377f169e10a215d"))()
+        loadstring(game:HttpGet("https://protected-roblox-scripts.onrender.com/56ba6133ea5374e56b85766fd60b0946"))()
     end)
 
     if not success then
